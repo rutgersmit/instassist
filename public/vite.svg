@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  <!-- Three carousel segments with gaps -->
+  <rect x="4" y="6" width="7" height="20" rx="1.5" fill="white" opacity="0.95"/>
+  <rect x="12.5" y="6" width="7" height="20" rx="1.5" fill="white" opacity="0.75"/>
+  <rect x="21" y="6" width="7" height="20" rx="1.5" fill="white" opacity="0.55"/>
+  <!-- Scissors / split indicator lines -->
+  <line x1="11.5" y1="4" x2="11.5" y2="28" stroke="white" stroke-width="0.5" stroke-dasharray="1.5 1" opacity="0.5"/>
+  <line x1="20.5" y1="4" x2="20.5" y2="28" stroke="white" stroke-width="0.5" stroke-dasharray="1.5 1" opacity="0.5"/>
+</svg>

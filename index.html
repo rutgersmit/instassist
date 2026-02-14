@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>InstAssist — Split Photos into Instagram Carousel Slides</title>
+    <meta name="description" content="Free online tool to split landscape and panoramic photos into perfectly sized square segments for Instagram carousel posts. No upload to server — all processing happens in your browser." />
+    <meta name="keywords" content="instagram carousel, split photo, panorama splitter, instagram grid, carousel maker, image splitter, instagram post splitter" />
+
+    <link rel="canonical" href="https://instassist.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="InstAssist — Split Photos into Instagram Carousel Slides" />
+    <meta property="og:description" content="Free online tool to split landscape photos into square segments for Instagram carousels. Works entirely in your browser — no uploads needed." />
+    <meta property="og:url" content="https://instassist.app/" />
+    <meta property="og:site_name" content="InstAssist" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="InstAssist — Split Photos into Instagram Carousel Slides" />
+    <meta name="twitter:description" content="Free online tool to split landscape photos into square segments for Instagram carousels. Works entirely in your browser." />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "InstAssist",
+      "url": "https://instassist.app/",
+      "description": "Free online tool to split landscape and panoramic photos into perfectly sized square segments for Instagram carousel posts.",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Split landscape photos into Instagram carousel slides",
+        "Adjustable segment count",
+        "Drag to adjust vertical crop position",
+        "Download all segments as a ZIP file",
+        "Privacy-friendly: all processing in-browser"
+      ]
+    }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#6366f1" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+  </body>
+</html>
