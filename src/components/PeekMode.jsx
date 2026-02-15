@@ -125,6 +125,43 @@ export default function PeekMode() {
         <p className="text-sm mt-1 text-white/35">or click to browse — select multiple</p>
       </div>
 
+      {/* Info sections — visible before images are uploaded */}
+      {images.length === 0 && (
+        <section className="mt-14 max-w-2xl mx-auto grid sm:grid-cols-2 gap-8">
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <h2 className="text-base font-semibold mb-4 text-white/90">How it works</h2>
+            <ol className="space-y-3 text-sm text-white/60">
+              <li className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">1</span>
+                Upload multiple images for your carousel
+              </li>
+              <li className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">2</span>
+                Reorder them to set the swipe sequence
+              </li>
+              <li className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-xs font-bold text-white">3</span>
+                Adjust the peek offset and optional blur
+              </li>
+              <li className="flex gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-xs font-bold text-white">4</span>
+                Download individually or as a ZIP
+              </li>
+            </ol>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <h2 className="text-base font-semibold mb-4 text-white/90">Why Peek Carousel?</h2>
+            <ul className="space-y-3 text-sm text-white/60">
+              <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Seamless swipe — each slide previews the next</li>
+              <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Encourages followers to keep swiping</li>
+              <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Works with any image size — always outputs squares</li>
+              <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Privacy-first — photos never leave your browser</li>
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* Thumbnail reorder list */}
       {images.length > 0 && (
         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
