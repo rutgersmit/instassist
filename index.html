@@ -4,24 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>InstAssist — Split Photos into Instagram Carousel Slides</title>
-    <meta name="description" content="Free online tool to split landscape and panoramic photos into perfectly sized square segments for Instagram carousel posts. No upload to server — all processing happens in your browser." />
-    <meta name="keywords" content="instagram carousel, split photo, panorama splitter, instagram grid, carousel maker, image splitter, instagram post splitter" />
+    <title>InstAssist — Instagram Carousel Splitter & Peek Carousel Maker</title>
+    <meta name="description" content="Free online tools for Instagram carousels. Split landscape photos into square slides, or create seamless peek carousels with a swipe preview of the next image. No upload — all processing in your browser." />
+    <meta name="keywords" content="instagram carousel, split photo, panorama splitter, instagram grid, carousel maker, image splitter, instagram post splitter, peek carousel, seamless swipe carousel, instagram carousel preview, carousel peek effect" />
 
     <link rel="canonical" href="https://instassist.app/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="InstAssist — Split Photos into Instagram Carousel Slides" />
-    <meta property="og:description" content="Free online tool to split landscape photos into square segments for Instagram carousels. Works entirely in your browser — no uploads needed." />
+    <meta property="og:title" content="InstAssist — Instagram Carousel Splitter & Peek Carousel Maker" />
+    <meta property="og:description" content="Free online tools for Instagram carousels. Split photos into square slides or create seamless peek carousels. No uploads — works in your browser." />
     <meta property="og:url" content="https://instassist.app/" />
     <meta property="og:site_name" content="InstAssist" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="InstAssist — Split Photos into Instagram Carousel Slides" />
-    <meta name="twitter:description" content="Free online tool to split landscape photos into square segments for Instagram carousels. Works entirely in your browser." />
+    <meta name="twitter:title" content="InstAssist — Instagram Carousel Splitter & Peek Carousel Maker" />
+    <meta name="twitter:description" content="Free online tools for Instagram carousels. Split photos into square slides or create seamless peek carousels. No uploads — works in your browser." />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -30,7 +30,7 @@
       "@type": "WebApplication",
       "name": "InstAssist",
       "url": "https://instassist.app/",
-      "description": "Free online tool to split landscape and panoramic photos into perfectly sized square segments for Instagram carousel posts.",
+      "description": "Free online tools for Instagram carousels. Split landscape photos into square slides, or create seamless peek carousels with a preview strip of the next image.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Any",
       "offers": {
@@ -40,9 +40,11 @@
       },
       "featureList": [
         "Split landscape photos into Instagram carousel slides",
-        "Adjustable segment count",
+        "Adjustable segment count (2-10 slides)",
         "Drag to adjust vertical crop position",
-        "Download all segments as a ZIP file",
+        "Peek carousel: seamless swipe preview of next image",
+        "Adjustable peek offset with optional blur effect",
+        "Download individual images or all as a ZIP file",
         "Privacy-friendly: all processing in-browser"
       ]
     }
@@ -55,6 +57,48 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <noscript>
+      <div style="max-width:700px;margin:0 auto;padding:40px 20px;color:#e0e0e0;font-family:system-ui,sans-serif;">
+        <h1>InstAssist — Free Instagram Carousel Tools</h1>
+        <p>InstAssist is a free, privacy-friendly set of browser-based tools for creating Instagram carousels. No sign-up required, no uploads to any server — your photos never leave your device.</p>
+
+        <h2>Photo Splitter</h2>
+        <p>Upload a landscape or panoramic photo and split it into perfectly sized square segments for an Instagram carousel post. Choose between 2 and 10 slides, drag to adjust the vertical crop, and download all segments as a ZIP file. Works with any aspect ratio — the tool automatically calculates the optimal number of slides.</p>
+
+        <h3>How the Splitter works</h3>
+        <ol>
+          <li>Upload a landscape or panoramic photo (JPG, PNG, or WebP)</li>
+          <li>Choose how many carousel slides you want (2-10)</li>
+          <li>Drag to adjust the vertical crop position</li>
+          <li>Download all segments as a ZIP file</li>
+        </ol>
+
+        <h2>Peek Carousel Maker</h2>
+        <p>Create a seamless swipe experience for your Instagram carousel. Upload multiple separate images and InstAssist composites each one with a small preview strip of the next image on the right side. When followers swipe through your carousel, the transition feels smooth and connected — encouraging them to keep swiping.</p>
+
+        <h3>How the Peek Carousel works</h3>
+        <ol>
+          <li>Upload multiple images for your carousel</li>
+          <li>Reorder them by dragging or using the arrow buttons</li>
+          <li>Adjust the peek offset (5-30%) to control how much of the next image is visible</li>
+          <li>Optionally blur the peek strip for a teaser effect</li>
+          <li>Download each image individually or all at once as a ZIP</li>
+        </ol>
+
+        <h2>Why InstAssist?</h2>
+        <ul>
+          <li>Free and instant — no account needed</li>
+          <li>Privacy-first — photos never leave your browser</li>
+          <li>Full quality — original resolution export</li>
+          <li>Works with any image size — landscape, portrait, or square</li>
+          <li>All output images are perfectly square for Instagram</li>
+        </ul>
+
+        <p>Please enable JavaScript to use InstAssist.</p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.jsx"></script>
     <script>
       if ('serviceWorker' in navigator) {

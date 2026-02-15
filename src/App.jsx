@@ -2,10 +2,12 @@ import { useState, useCallback } from 'react';
 import ImageUploader from './components/ImageUploader';
 import SegmentPreview from './components/SegmentPreview';
 import Controls from './components/Controls';
+import PeekMode from './components/PeekMode';
 import { calculateOptimalSegments, splitImage } from './utils/splitImage';
 import { downloadSegments } from './utils/download';
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState('splitter');
   const [image, setImage] = useState(null);
   const [fileName, setFileName] = useState('');
   const [segmentCount, setSegmentCount] = useState(3);
@@ -46,72 +48,97 @@ export default function App() {
             InstAssist
           </h1>
           <p className="text-sm text-white/50 mt-2">
-            Split landscape photos into square segments for Instagram carousels
+            Tools for Instagram carousels
           </p>
+
+          <div className="mt-5 inline-flex rounded-xl bg-white/5 border border-white/10 p-1">
+            {[
+              { id: 'splitter', label: 'Splitter' },
+              { id: 'peek', label: 'Peek Carousel' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow'
+                    : 'text-white/50 hover:text-white/80'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </header>
 
         <main>
-          {!image ? (
-            <div className="animate-fade-in-up">
-              <ImageUploader onImageLoad={handleImageLoad} />
+          {activeTab === 'splitter' ? (
+            <>
+              {!image ? (
+                <div className="animate-fade-in-up">
+                  <ImageUploader onImageLoad={handleImageLoad} />
 
-              <section className="mt-14 max-w-2xl mx-auto grid sm:grid-cols-2 gap-8">
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                  <h2 className="text-base font-semibold mb-4 text-white/90">How it works</h2>
-                  <ol className="space-y-3 text-sm text-white/60">
-                    <li className="flex gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">1</span>
-                      Upload a landscape or panoramic photo
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">2</span>
-                      Choose how many carousel slides (2-10)
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-xs font-bold text-white">3</span>
-                      Drag to adjust the vertical crop
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-xs font-bold text-white">4</span>
-                      Download all segments as a ZIP
-                    </li>
-                  </ol>
-                </div>
+                  <section className="mt-14 max-w-2xl mx-auto grid sm:grid-cols-2 gap-8">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                      <h2 className="text-base font-semibold mb-4 text-white/90">How it works</h2>
+                      <ol className="space-y-3 text-sm text-white/60">
+                        <li className="flex gap-3">
+                          <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">1</span>
+                          Upload a landscape or panoramic photo
+                        </li>
+                        <li className="flex gap-3">
+                          <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">2</span>
+                          Choose how many carousel slides (2-10)
+                        </li>
+                        <li className="flex gap-3">
+                          <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-xs font-bold text-white">3</span>
+                          Drag to adjust the vertical crop
+                        </li>
+                        <li className="flex gap-3">
+                          <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-xs font-bold text-white">4</span>
+                          Download all segments as a ZIP
+                        </li>
+                      </ol>
+                    </div>
 
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                  <h2 className="text-base font-semibold mb-4 text-white/90">Why InstAssist?</h2>
-                  <ul className="space-y-3 text-sm text-white/60">
-                    <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Free and instant — no account needed</li>
-                    <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Privacy-first — photos never leave your browser</li>
-                    <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Full quality — original resolution export</li>
-                    <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Works with any landscape or panorama</li>
-                  </ul>
+                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                      <h2 className="text-base font-semibold mb-4 text-white/90">Why InstAssist?</h2>
+                      <ul className="space-y-3 text-sm text-white/60">
+                        <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Free and instant — no account needed</li>
+                        <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Privacy-first — photos never leave your browser</li>
+                        <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Full quality — original resolution export</li>
+                        <li className="flex gap-2 items-start"><span className="text-green-400 mt-0.5">&#10003;</span> Works with any landscape or panorama</li>
+                      </ul>
+                    </div>
+                  </section>
                 </div>
-              </section>
-            </div>
+              ) : (
+                <div className="space-y-6 animate-fade-in-up">
+                  <Controls
+                    segmentCount={segmentCount}
+                    onSegmentCountChange={setSegmentCount}
+                    onDownload={handleDownload}
+                    downloading={downloading}
+                  />
+
+                  <SegmentPreview
+                    image={image}
+                    segmentCount={segmentCount}
+                    verticalAlign={verticalAlign}
+                    onVerticalAlignChange={setVerticalAlign}
+                  />
+
+                  <button
+                    onClick={handleReset}
+                    className="text-sm text-white/30 hover:text-white/60 transition-colors cursor-pointer"
+                  >
+                    &larr; Upload a different image
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="space-y-6 animate-fade-in-up">
-              <Controls
-                segmentCount={segmentCount}
-                onSegmentCountChange={setSegmentCount}
-                onDownload={handleDownload}
-                downloading={downloading}
-              />
-
-              <SegmentPreview
-                image={image}
-                segmentCount={segmentCount}
-                verticalAlign={verticalAlign}
-                onVerticalAlignChange={setVerticalAlign}
-              />
-
-              <button
-                onClick={handleReset}
-                className="text-sm text-white/30 hover:text-white/60 transition-colors cursor-pointer"
-              >
-                &larr; Upload a different image
-              </button>
-            </div>
+            <PeekMode />
           )}
         </main>
 
