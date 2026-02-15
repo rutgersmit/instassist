@@ -225,8 +225,9 @@ export default function PeekMode() {
             </label>
             <input
               type="range"
-              min={5}
-              max={30}
+              min={0}
+              max={20}
+              step={1}
               value={draftPeekPercent}
               onChange={(e) => setDraftPeekPercent(Number(e.target.value))}
               onPointerUp={(e) => { const v = Number(e.target.value); setPeekPercent(v); localStorage.setItem('peek-percent', v); }}

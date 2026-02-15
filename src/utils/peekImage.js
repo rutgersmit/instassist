@@ -1,69 +1,73 @@
-// Draw an image cover-fitted into a square canvas
-function renderSquare(img, size) {
+// Cover-fit an image into a target width x height canvas
+function renderCover(img, width, height) {
   const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
 
   const imgRatio = img.width / img.height;
+  const targetRatio = width / height;
+
   let sx, sy, sw, sh;
-  if (imgRatio > 1) {
-    // Wider than tall — crop sides
+  if (imgRatio > targetRatio) {
+    // Image is wider — crop sides
     sh = img.height;
-    sw = img.height;
+    sw = img.height * targetRatio;
     sx = (img.width - sw) / 2;
     sy = 0;
   } else {
-    // Taller than wide — crop top/bottom
+    // Image is taller — crop top/bottom
     sw = img.width;
-    sh = img.width;
+    sh = img.width / targetRatio;
     sx = 0;
     sy = (img.height - sh) / 2;
   }
 
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
   return canvas;
 }
 
 export function generatePeekImages(images, peekPercent = 15, blur = false) {
-  // Square output: use the largest dimension for max quality
+  // Square output size: use the largest dimension for max quality
   const size = Math.max(...images.map((img) => Math.max(img.width, img.height)));
-
-  // Step 1: pre-render every image as a full square
-  const squares = images.map((img) => renderSquare(img, size));
-
-  // Step 2: compose output slides by slicing from the pre-rendered squares
-  // Output i = [square[i] left (size - peekWidth) px] + [square[i+1] left peekWidth px]
-  // This guarantees the peek on slide i matches the left edge of slide i+1.
   const peekWidth = Math.round(size * (peekPercent / 100));
   const mainWidth = size - peekWidth;
+
+  // Each image is cover-fitted slightly wider than square: (size + peekWidth) x size.
+  // This extra width means the peek on slide N shows pixels [0..peekWidth] of wide[N+1],
+  // and slide N+1 picks up at pixel [peekWidth..], so there's no repeated content.
+  const wides = images.map((img) => renderCover(img, size + peekWidth, size));
+
   const canvases = [];
 
-  for (let i = 0; i < squares.length; i++) {
+  for (let i = 0; i < images.length; i++) {
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
 
-    if (i < squares.length - 1) {
-      // Main area: left portion of current square
-      ctx.drawImage(squares[i], 0, 0, mainWidth, size, 0, 0, mainWidth, size);
+    // First image starts at offset 0; subsequent images start at peekWidth
+    // (skipping the part already shown as peek on the previous slide)
+    const offset = i === 0 ? 0 : peekWidth;
 
-      // Peek strip: left portion of next square
+    if (i < images.length - 1) {
+      // Main area: current image from offset, mainWidth pixels wide
+      ctx.drawImage(wides[i], offset, 0, mainWidth, size, 0, 0, mainWidth, size);
+
+      // Peek strip: left portion of next image's wide render
       if (blur) {
         ctx.save();
         ctx.filter = 'blur(8px)';
-        // Draw slightly wider to avoid transparent blur edges
-        ctx.drawImage(squares[i + 1], 0, 0, peekWidth + 4, size, mainWidth - 4, 0, peekWidth + 4, size);
+        ctx.drawImage(wides[i + 1], 0, 0, peekWidth + 4, size, mainWidth - 4, 0, peekWidth + 4, size);
         ctx.restore();
-        // Clean seam: redraw thin strip from main image
-        ctx.drawImage(squares[i], mainWidth - 2, 0, 2, size, mainWidth - 2, 0, 2, size);
+        // Clean seam
+        ctx.drawImage(wides[i], offset + mainWidth - 2, 0, 2, size, mainWidth - 2, 0, 2, size);
       } else {
-        ctx.drawImage(squares[i + 1], 0, 0, peekWidth, size, mainWidth, 0, peekWidth, size);
+        ctx.drawImage(wides[i + 1], 0, 0, peekWidth, size, mainWidth, 0, peekWidth, size);
       }
     } else {
-      // Last image: full square, no peek
-      ctx.drawImage(squares[i], 0, 0);
+      // Last image: show from offset, full size width
+      ctx.drawImage(wides[i], offset, 0, size, size, 0, 0, size, size);
     }
 
     canvases.push(canvas);
