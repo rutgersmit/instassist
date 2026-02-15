@@ -11,6 +11,7 @@ export default function PeekMode() {
   const [blur, setBlur] = useState(() => {
     return localStorage.getItem('peek-blur') === 'true';
   });
+  const [draftPeekPercent, setDraftPeekPercent] = useState(peekPercent);
   const [downloading, setDownloading] = useState(false);
 
   const handleFiles = useCallback((files) => {
@@ -220,14 +221,15 @@ export default function PeekMode() {
           <div>
             <label className="flex items-center justify-between text-sm text-white/70 mb-2">
               <span>Peek offset</span>
-              <span className="text-white/40">{peekPercent}%</span>
+              <span className="text-white/40">{draftPeekPercent}%</span>
             </label>
             <input
               type="range"
               min={5}
               max={30}
-              value={peekPercent}
-              onChange={(e) => { const v = Number(e.target.value); setPeekPercent(v); localStorage.setItem('peek-percent', v); }}
+              value={draftPeekPercent}
+              onChange={(e) => setDraftPeekPercent(Number(e.target.value))}
+              onPointerUp={(e) => { const v = Number(e.target.value); setPeekPercent(v); localStorage.setItem('peek-percent', v); }}
               className="w-full"
             />
           </div>
