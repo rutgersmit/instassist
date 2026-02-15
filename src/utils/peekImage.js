@@ -1,5 +1,6 @@
 // Cover-fit an image into a target width x height canvas
-function renderCover(img, width, height) {
+// focalX/focalY: 0–1 focal point (0.5 = centered)
+function renderCover(img, width, height, focalX = 0.5, focalY = 0.5) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -13,21 +14,21 @@ function renderCover(img, width, height) {
     // Image is wider — crop sides
     sh = img.height;
     sw = img.height * targetRatio;
-    sx = (img.width - sw) / 2;
+    sx = (img.width - sw) * focalX;
     sy = 0;
   } else {
     // Image is taller — crop top/bottom
     sw = img.width;
     sh = img.width / targetRatio;
     sx = 0;
-    sy = (img.height - sh) / 2;
+    sy = (img.height - sh) * focalY;
   }
 
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
   return canvas;
 }
 
-export function generatePeekImages(images, peekPercent = 15, blur = false) {
+export function generatePeekImages(images, peekPercent = 15, blur = false, positions = []) {
   // Square output size: use the largest dimension for max quality
   const size = Math.max(...images.map((img) => Math.max(img.width, img.height)));
   const peekWidth = Math.round(size * (peekPercent / 100));
@@ -36,7 +37,10 @@ export function generatePeekImages(images, peekPercent = 15, blur = false) {
   // Each image is cover-fitted slightly wider than square: (size + peekWidth) x size.
   // This extra width means the peek on slide N shows pixels [0..peekWidth] of wide[N+1],
   // and slide N+1 picks up at pixel [peekWidth..], so there's no repeated content.
-  const wides = images.map((img) => renderCover(img, size + peekWidth, size));
+  const wides = images.map((img, i) => {
+    const pos = positions[i] || { x: 0.5, y: 0.5 };
+    return renderCover(img, size + peekWidth, size, pos.x, pos.y);
+  });
 
   const canvases = [];
 
