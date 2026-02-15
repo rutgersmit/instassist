@@ -1,9 +1,14 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { generatePeekImages } from '../utils/peekImage';
 import { downloadSegments } from '../utils/download';
 
 export default function PeekMode() {
   const [images, setImages] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const dragIndexRef = useRef(null);
+  const [dragFromIndex, setDragFromIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
   const [peekPercent, setPeekPercent] = useState(() => {
     const saved = localStorage.getItem('peek-percent');
     return saved !== null ? Number(saved) : 10;
@@ -29,6 +34,7 @@ export default function PeekMode() {
 
     Promise.all(promises).then((loaded) => {
       setImages((prev) => [...prev, ...loaded]);
+      setPositions((prev) => [...prev, ...loaded.map(() => ({ x: 0.5, y: 0.5 }))]);
     });
   }, []);
 
@@ -49,16 +55,36 @@ export default function PeekMode() {
       next.splice(to, 0, item);
       return next;
     });
+    setPositions((prev) => {
+      const next = [...prev];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+    setEditingIndex((prev) => {
+      if (prev === null) return null;
+      if (prev === from) return to;
+      if (from < prev && to >= prev) return prev - 1;
+      if (from > prev && to <= prev) return prev + 1;
+      return prev;
+    });
   }, []);
 
   const removeImage = useCallback((index) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+    setPositions((prev) => prev.filter((_, i) => i !== index));
+    setEditingIndex((prev) => {
+      if (prev === null) return null;
+      if (prev === index) return null;
+      if (prev > index) return prev - 1;
+      return prev;
+    });
   }, []);
 
   const previews = useMemo(() => {
     if (images.length < 2) return [];
-    return generatePeekImages(images, peekPercent, blur);
-  }, [images, peekPercent, blur]);
+    return generatePeekImages(images, peekPercent, blur, positions);
+  }, [images, peekPercent, blur, positions]);
 
   const previewDataUrls = useMemo(() => {
     return previews.map((canvas) => canvas.toDataURL('image/jpeg', 0.7));
@@ -94,7 +120,47 @@ export default function PeekMode() {
 
   const handleReset = useCallback(() => {
     setImages([]);
+    setPositions([]);
+    setEditingIndex(null);
   }, []);
+
+  // Crop positioner drag logic — draft position drives frame only,
+  // committed to positions (triggering preview re-render) on pointer up.
+  const posContainerRef = useRef(null);
+  const posDragging = useRef(false);
+  const [draftPos, setDraftPos] = useState(null);
+
+  const calcFocalPoint = useCallback((clientX, clientY) => {
+    const rect = posContainerRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    return { x, y };
+  }, []);
+
+  const onPosPointerDown = useCallback((e) => {
+    if (editingIndex === null) return;
+    posDragging.current = true;
+    posContainerRef.current.setPointerCapture(e.pointerId);
+    setDraftPos(calcFocalPoint(e.clientX, e.clientY));
+  }, [editingIndex, calcFocalPoint]);
+
+  const onPosPointerMove = useCallback((e) => {
+    if (!posDragging.current || editingIndex === null) return;
+    setDraftPos(calcFocalPoint(e.clientX, e.clientY));
+  }, [editingIndex, calcFocalPoint]);
+
+  const onPosPointerUp = useCallback(() => {
+    if (!posDragging.current) return;
+    posDragging.current = false;
+    if (draftPos !== null && editingIndex !== null) {
+      setPositions((prev) => {
+        const next = [...prev];
+        next[editingIndex] = draftPos;
+        return next;
+      });
+      setDraftPos(null);
+    }
+  }, [draftPos, editingIndex]);
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -165,10 +231,26 @@ export default function PeekMode() {
 
       {/* Thumbnail reorder list */}
       {images.length > 0 && (
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+        <div
+          className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10"
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOverIndex(null);
+            setDragFromIndex(null);
+            // If it's a reorder drag (no files), handle move
+            if (dragIndexRef.current !== null && e.dataTransfer.files.length === 0) {
+              dragIndexRef.current = null;
+              return;
+            }
+            dragIndexRef.current = null;
+            // Otherwise it's a file drop — add images
+            handleFiles(e.dataTransfer.files);
+          }}
+          onDragOver={(e) => e.preventDefault()}
+        >
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white/70">
-              {images.length} image{images.length !== 1 ? 's' : ''} — drag order
+              {images.length} image{images.length !== 1 ? 's' : ''} — drag to reorder
             </h3>
             <button
               onClick={handleReset}
@@ -181,29 +263,40 @@ export default function PeekMode() {
             {images.map((img, i) => (
               <div
                 key={i}
-                className="relative shrink-0 group"
+                draggable
+                onDragStart={(e) => {
+                  dragIndexRef.current = i;
+                  setDragFromIndex(i);
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (dragIndexRef.current === null) return;
+                  setDragOverIndex(i);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (dragIndexRef.current !== null && dragIndexRef.current !== i) {
+                    moveImage(dragIndexRef.current, i);
+                  }
+                  dragIndexRef.current = null;
+                  setDragFromIndex(null);
+                  setDragOverIndex(null);
+                }}
+                onDragEnd={() => { dragIndexRef.current = null; setDragFromIndex(null); setDragOverIndex(null); }}
+                className={`relative shrink-0 group cursor-grab active:cursor-grabbing transition-all duration-150 ${dragFromIndex === i ? 'opacity-30 scale-90' : ''} ${dragOverIndex === i && dragFromIndex !== null && dragFromIndex !== i ? 'scale-110' : ''}`}
+                onClick={() => setEditingIndex(editingIndex === i ? null : i)}
               >
                 <img
                   src={img.src}
                   alt={`Image ${i + 1}`}
-                  className="h-20 w-auto rounded-lg border border-white/10 object-cover"
+                  className={`h-20 w-auto rounded-lg border-2 object-cover transition-all ${editingIndex === i ? 'border-pink-500 ring-2 ring-pink-500/40' : dragOverIndex === i && dragFromIndex !== null && dragFromIndex !== i ? 'border-indigo-400 ring-2 ring-indigo-400/30' : 'border-white/10'}`}
                 />
                 <span className="absolute top-1 left-1 text-[10px] bg-black/60 rounded px-1 text-white/80">
                   {i + 1}
                 </span>
                 <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {i > 0 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); moveImage(i, i - 1); }}
-                      className="w-5 h-5 rounded bg-black/60 text-white/80 hover:bg-black/80 text-xs flex items-center justify-center cursor-pointer"
-                    >&#8592;</button>
-                  )}
-                  {i < images.length - 1 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); moveImage(i, i + 1); }}
-                      className="w-5 h-5 rounded bg-black/60 text-white/80 hover:bg-black/80 text-xs flex items-center justify-center cursor-pointer"
-                    >&#8594;</button>
-                  )}
                   <button
                     onClick={(e) => { e.stopPropagation(); removeImage(i); }}
                     className="w-5 h-5 rounded bg-red-900/60 text-white/80 hover:bg-red-800/80 text-xs flex items-center justify-center cursor-pointer"
@@ -212,6 +305,106 @@ export default function PeekMode() {
               </div>
             ))}
           </div>
+
+          {/* Inline crop positioner */}
+          {editingIndex !== null && images[editingIndex] && (() => {
+            const img = images[editingIndex];
+            const pos = draftPos || positions[editingIndex] || { x: 0.5, y: 0.5 };
+            const imgRatio = img.width / img.height;
+            // The crop target is slightly-wider-than-square (matching peek render),
+            // but for the positioner we simplify to a square crop overlay.
+            const isWider = imgRatio > 1;
+            const isTaller = imgRatio < 1;
+
+            // Show the image at a usable size with the crop region indicated
+            // For wider images: full width shown, crop box is square centered, user shifts horizontally
+            // For taller images: full height shown, crop box is square centered, user shifts vertically
+            // For square images: no positioning needed
+
+            if (!isWider && !isTaller) return (
+              <div className="mt-3 text-xs text-white/30 text-center">Image is square — no repositioning needed</div>
+            );
+
+            // Compute crop overlay percentages
+            let cropWidthPct, cropHeightPct, cropLeftPct, cropTopPct;
+            if (isWider) {
+              // Landscape: crop height = 100%, crop width = height/width ratio
+              cropHeightPct = 100;
+              cropWidthPct = (1 / imgRatio) * 100;
+              cropTopPct = 0;
+              cropLeftPct = (100 - cropWidthPct) * pos.x;
+            } else {
+              // Portrait: crop width = 100%, crop height = width/height ratio
+              cropWidthPct = 100;
+              cropHeightPct = imgRatio * 100;
+              cropLeftPct = 0;
+              cropTopPct = (100 - cropHeightPct) * pos.y;
+            }
+
+            return (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-white/40">
+                    {isWider ? 'Click or drag to set horizontal focus' : 'Click or drag to set vertical focus'}
+                  </span>
+                  <button
+                    onClick={() => setEditingIndex(null)}
+                    className="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer px-2 py-0.5 rounded bg-white/5 hover:bg-white/10"
+                  >
+                    Done
+                  </button>
+                </div>
+                <div
+                  ref={posContainerRef}
+                  className={`relative inline-block max-w-full overflow-hidden rounded-xl select-none ${isWider ? 'cursor-ew-resize' : 'cursor-ns-resize'}`}
+                  onPointerDown={onPosPointerDown}
+                  onPointerMove={onPosPointerMove}
+                  onPointerUp={onPosPointerUp}
+                >
+                  <img
+                    src={img.src}
+                    alt="Position crop"
+                    className="max-w-full h-auto block max-h-64"
+                    draggable={false}
+                  />
+                  {/* Dim areas outside crop */}
+                  {isWider ? (
+                    <>
+                      <div
+                        className="absolute top-0 bottom-0 left-0 bg-black/50 pointer-events-none transition-all duration-75"
+                        style={{ width: `${cropLeftPct}%` }}
+                      />
+                      <div
+                        className="absolute top-0 bottom-0 right-0 bg-black/50 pointer-events-none transition-all duration-75"
+                        style={{ width: `${100 - cropLeftPct - cropWidthPct}%` }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className="absolute left-0 right-0 top-0 bg-black/50 pointer-events-none transition-all duration-75"
+                        style={{ height: `${cropTopPct}%` }}
+                      />
+                      <div
+                        className="absolute left-0 right-0 bottom-0 bg-black/50 pointer-events-none transition-all duration-75"
+                        style={{ height: `${100 - cropTopPct - cropHeightPct}%` }}
+                      />
+                    </>
+                  )}
+                  {/* Crop frame border */}
+                  <div
+                    className="absolute border-2 border-white/40 rounded pointer-events-none transition-all duration-75"
+                    style={{
+                      left: `${cropLeftPct}%`,
+                      top: `${cropTopPct}%`,
+                      width: `${cropWidthPct}%`,
+                      height: `${cropHeightPct}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
