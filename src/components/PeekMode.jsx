@@ -27,8 +27,12 @@ export default function PeekMode() {
       (file) =>
         new Promise((resolve) => {
           const img = new Image();
-          img.onload = () => resolve(img);
-          img.src = URL.createObjectURL(file);
+          const objectUrl = URL.createObjectURL(file);
+          img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve({ id: crypto.randomUUID(), img });
+          };
+          img.src = objectUrl;
         })
     );
 
@@ -83,7 +87,7 @@ export default function PeekMode() {
 
   const previews = useMemo(() => {
     if (images.length < 2) return [];
-    return generatePeekImages(images, peekPercent, blur, positions);
+    return generatePeekImages(images.map((item) => item.img), peekPercent, blur, positions);
   }, [images, peekPercent, blur, positions]);
 
   const previewDataUrls = useMemo(() => {
@@ -260,9 +264,9 @@ export default function PeekMode() {
             </button>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {images.map((img, i) => (
+            {images.map((item, i) => (
               <div
-                key={i}
+                key={item.id}
                 draggable
                 onDragStart={(e) => {
                   dragIndexRef.current = i;
@@ -289,7 +293,7 @@ export default function PeekMode() {
                 onClick={() => setEditingIndex(editingIndex === i ? null : i)}
               >
                 <img
-                  src={img.src}
+                  src={item.img.src}
                   alt={`Image ${i + 1}`}
                   className={`h-20 w-auto rounded-lg border-2 object-cover transition-all ${editingIndex === i ? 'border-pink-500 ring-2 ring-pink-500/40' : dragOverIndex === i && dragFromIndex !== null && dragFromIndex !== i ? 'border-indigo-400 ring-2 ring-indigo-400/30' : 'border-white/10'}`}
                 />
@@ -308,7 +312,7 @@ export default function PeekMode() {
 
           {/* Inline crop positioner */}
           {editingIndex !== null && images[editingIndex] && (() => {
-            const img = images[editingIndex];
+            const img = images[editingIndex].img;
             const pos = draftPos || positions[editingIndex] || { x: 0.5, y: 0.5 };
             const imgRatio = img.width / img.height;
             // The crop target is slightly-wider-than-square (matching peek render),

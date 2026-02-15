@@ -28,9 +28,11 @@ function renderCover(img, width, height, focalX = 0.5, focalY = 0.5) {
   return canvas;
 }
 
+const MAX_SIZE = 4096;
+
 export function generatePeekImages(images, peekPercent = 15, blur = false, positions = []) {
-  // Square output size: use the largest dimension for max quality
-  const size = Math.max(...images.map((img) => Math.max(img.width, img.height)));
+  // Square output size: use the largest dimension for max quality, capped to avoid OOM
+  const size = Math.min(MAX_SIZE, Math.max(...images.map((img) => Math.max(img.width, img.height))));
   const peekWidth = Math.round(size * (peekPercent / 100));
   const mainWidth = size - peekWidth;
 
