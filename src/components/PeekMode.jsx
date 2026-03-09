@@ -11,7 +11,7 @@ export default function PeekMode() {
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [peekPercent, setPeekPercent] = useState(() => {
     const saved = localStorage.getItem('peek-percent');
-    return saved !== null ? Number(saved) : 10;
+    return saved !== null ? Number(saved) : 5;
   });
   const [blur, setBlur] = useState(() => {
     return localStorage.getItem('peek-blur') === 'true';
