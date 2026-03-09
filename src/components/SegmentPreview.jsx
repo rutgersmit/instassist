@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { getSegmentPositions, splitImage } from '../utils/splitImage';
 
-export default function SegmentPreview({ image, segmentCount, verticalAlign, onVerticalAlignChange }) {
+export default function SegmentPreview({ image, imageUrl, segmentCount, verticalAlign, onVerticalAlignChange }) {
   const [dragAlign, setDragAlign] = useState(null);
   const activeAlign = dragAlign !== null ? dragAlign : verticalAlign;
 
@@ -74,7 +74,7 @@ export default function SegmentPreview({ image, segmentCount, verticalAlign, onV
           onPointerUp={onPointerUp}
         >
           <img
-            src={image.src}
+            src={imageUrl}
             alt="Original"
             className="max-w-full h-auto block"
             draggable={false}
