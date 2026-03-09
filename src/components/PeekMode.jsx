@@ -29,8 +29,7 @@ export default function PeekMode() {
           const img = new Image();
           const objectUrl = URL.createObjectURL(file);
           img.onload = () => {
-            URL.revokeObjectURL(objectUrl);
-            resolve({ id: crypto.randomUUID(), img });
+            resolve({ id: crypto.randomUUID(), img, url: objectUrl });
           };
           img.src = objectUrl;
         })
@@ -75,7 +74,11 @@ export default function PeekMode() {
   }, []);
 
   const removeImage = useCallback((index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImages((prev) => {
+      const item = prev[index];
+      if (item?.url) URL.revokeObjectURL(item.url);
+      return prev.filter((_, i) => i !== index);
+    });
     setPositions((prev) => prev.filter((_, i) => i !== index));
     setEditingIndex((prev) => {
       if (prev === null) return null;
@@ -293,7 +296,7 @@ export default function PeekMode() {
                 onClick={() => setEditingIndex(editingIndex === i ? null : i)}
               >
                 <img
-                  src={item.img.src}
+                  src={item.url}
                   alt={`Image ${i + 1}`}
                   className={`h-20 w-auto rounded-lg border-2 object-cover transition-all ${editingIndex === i ? 'border-pink-500 ring-2 ring-pink-500/40' : dragOverIndex === i && dragFromIndex !== null && dragFromIndex !== i ? 'border-indigo-400 ring-2 ring-indigo-400/30' : 'border-white/10'}`}
                 />
@@ -366,7 +369,7 @@ export default function PeekMode() {
                   onPointerUp={onPosPointerUp}
                 >
                   <img
-                    src={img.src}
+                    src={images[editingIndex].url}
                     alt="Position crop"
                     className="max-w-full h-auto block max-h-64"
                     draggable={false}
