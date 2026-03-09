@@ -10,8 +10,7 @@ export default function ImageUploader({ onImageLoad }) {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      onImageLoad(img, file.name);
+      onImageLoad(img, file.name, objectUrl);
     };
     img.src = objectUrl;
   }

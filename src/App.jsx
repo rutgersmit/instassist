@@ -9,13 +9,15 @@ import { downloadSegments } from './utils/download';
 export default function App() {
   const [activeTab, setActiveTab] = useState('splitter');
   const [image, setImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
   const [fileName, setFileName] = useState('');
   const [segmentCount, setSegmentCount] = useState(3);
 
   const [verticalAlign, setVerticalAlign] = useState(0.5);
   const [downloading, setDownloading] = useState(false);
 
-  const handleImageLoad = useCallback((img, name) => {
+  const handleImageLoad = useCallback((img, name, url) => {
+    setImageUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return url; });
     setImage(img);
     setFileName(name.replace(/\.[^.]+$/, ''));
     setSegmentCount(calculateOptimalSegments(img.width, img.height));
@@ -35,6 +37,7 @@ export default function App() {
 
   const handleReset = useCallback(() => {
     setImage(null);
+    setImageUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     setFileName('');
     setSegmentCount(3);
     setVerticalAlign(0.5);
@@ -123,6 +126,7 @@ export default function App() {
 
                   <SegmentPreview
                     image={image}
+                    imageUrl={imageUrl}
                     segmentCount={segmentCount}
                     verticalAlign={verticalAlign}
                     onVerticalAlignChange={setVerticalAlign}
