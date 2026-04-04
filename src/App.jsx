@@ -3,6 +3,7 @@ import ImageUploader from './components/ImageUploader';
 import SegmentPreview from './components/SegmentPreview';
 import Controls from './components/Controls';
 import PeekMode from './components/PeekMode';
+import RatioCrop from './components/RatioCrop';
 import { calculateOptimalSegments, splitImage } from './utils/splitImage';
 import { downloadSegments } from './utils/download';
 
@@ -58,6 +59,7 @@ export default function App() {
             {[
               { id: 'splitter', label: 'Splitter' },
               { id: 'peek', label: 'Peek Carousel' },
+              { id: 'ratio', label: 'Ratio Crop' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -141,8 +143,10 @@ export default function App() {
                 </div>
               )}
             </>
-          ) : (
+          ) : activeTab === 'peek' ? (
             <PeekMode />
+          ) : (
+            <RatioCrop />
           )}
         </main>
 
