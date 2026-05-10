@@ -11,7 +11,7 @@ const RATIOS = [
 export default function RatioCrop() {
   const [images, setImages] = useState([]);
   const [positions, setPositions] = useState([]);
-  const [selectedRatio, setSelectedRatio] = useState('vertical');
+  const [selectedRatio, setSelectedRatio] = useState(() => localStorage.getItem('ratio-crop-ratio') ?? 'vertical');
   const [editingIndex, setEditingIndex] = useState(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -252,7 +252,7 @@ export default function RatioCrop() {
               {RATIOS.map((r) => (
                 <button
                   key={r.id}
-                  onClick={() => setSelectedRatio(r.id)}
+                  onClick={() => { setSelectedRatio(r.id); localStorage.setItem('ratio-crop-ratio', r.id); }}
                   className={`flex-1 flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
                     selectedRatio === r.id
                       ? 'border-pink-500 bg-pink-500/10 text-white'
