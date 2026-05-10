@@ -121,12 +121,14 @@ export default function PeekMode() {
   const openInNewTab = useCallback((canvas) => {
     canvas.toBlob((blob) => {
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      const tab = window.open(url, '_blank');
+      if (tab) tab.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+      else URL.revokeObjectURL(url);
     }, 'image/jpeg', 1.0);
   }, []);
 
   const handleReset = useCallback(() => {
-    setImages([]);
+    setImages((prev) => { prev.forEach((item) => { if (item?.url) URL.revokeObjectURL(item.url); }); return []; });
     setPositions([]);
     setEditingIndex(null);
   }, []);
@@ -244,13 +246,13 @@ export default function PeekMode() {
             e.preventDefault();
             setDragOverIndex(null);
             setDragFromIndex(null);
-            // If it's a reorder drag (no files), handle move
             if (dragIndexRef.current !== null && e.dataTransfer.files.length === 0) {
+              // Reorder drag dropped between thumbnails — move to end
+              moveImage(dragIndexRef.current, images.length - 1);
               dragIndexRef.current = null;
               return;
             }
             dragIndexRef.current = null;
-            // Otherwise it's a file drop — add images
             handleFiles(e.dataTransfer.files);
           }}
           onDragOver={(e) => e.preventDefault()}
