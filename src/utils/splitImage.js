@@ -18,10 +18,11 @@ export function splitImage(image, segmentCount, verticalAlign = 0.5) {
     const ctx = canvas.getContext('2d');
 
     const sx = i * segmentSide;
+    const availableWidth = Math.min(segmentSide, image.width - sx);
     ctx.drawImage(
       image,
-      sx, sy, segmentSide, sourceHeight,
-      0, 0, segmentSide, segmentSide
+      sx, sy, availableWidth, sourceHeight,
+      0, 0, availableWidth, segmentSide
     );
     return canvas;
   });
