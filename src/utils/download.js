@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
-function canvasToBlob(canvas, type = 'image/jpeg', quality = 1.0) {
+function canvasToBlob(canvas, type = 'image/jpeg', quality = 0.85) {
   return new Promise((resolve) => {
     canvas.toBlob(resolve, type, quality);
   });
