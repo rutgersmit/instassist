@@ -8,7 +8,7 @@ import { calculateOptimalSegments, splitImage } from './utils/splitImage';
 import { downloadSegments } from './utils/download';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('splitter');
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('active-tab') ?? 'ratio');
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -57,13 +57,13 @@ export default function App() {
 
           <div className="mt-5 inline-flex rounded-xl bg-white/5 border border-white/10 p-1">
             {[
+              { id: 'ratio', label: 'Ratio Crop' },
               { id: 'splitter', label: 'Splitter' },
               { id: 'peek', label: 'Peek Carousel' },
-              { id: 'ratio', label: 'Ratio Crop' },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); localStorage.setItem('active-tab', tab.id); }}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                   activeTab === tab.id
                     ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow'
